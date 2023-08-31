@@ -1,14 +1,17 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from .models import User, AuctionListing, Bid, WatchListItem, Comment
-
+from datetime import datetime
 
 def index(request):
-    return render(request, "auctions/index.html")
+    active_listings = AuctionListing.objects.filter(active=True)
+    return render(request, "auctions/index.html",{
+        'listings': active_listings
+    })
 
 
 def login_view(request):
@@ -63,8 +66,8 @@ def register(request):
         return render(request, "auctions/register.html")
     
 def create(request):
+    categories = [cat[0] for cat in AuctionListing.CATEGORIES]
     if request.method == 'GET':
-        categories = [cat[0] for cat in AuctionListing.CATEGORIES]
         return render(request, "auctions/create.html", {
             'categories' : categories
         })
@@ -73,4 +76,56 @@ def create(request):
         description = request.POST.get('description')
         price = request.POST.get('price')
         image = request.POST.get('image')
+        category = request.POST.get('category')
+        if title is None or description is None or price is None:
+            return render(request, "auctions/create.html", {
+                'categories' : categories,
+                'message': 'Title, description and starting bid are mandatory'
+            })
+        else:
+            listing = AuctionListing(title=title, 
+                                     description=description, 
+                                     price=price,
+                                     image=image,
+                                     category=category,
+                                     active=True,
+                                     creator=request.user,
+                                     winner=None,
+                                     date = datetime.now())
+            listing.save()
+
+def listing(request, id):
+    listing = AuctionListing.objects.get(id=id)
+    if request.method == 'GET':
+        user = request.user
+        watchlisted = WatchListItem.objects.filter(user=request.user, listing=AuctionListing.objects.get(id=id))
+        if len(watchlisted) != 0:
+            watchlisted = True
+        else:
+            watchlisted = False
+        return render(request, "auctions/listing.html", {
+            'listing': listing,
+            'user': user,
+            'watchlisted': watchlisted
+        })
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'Watchlist':
+            item = WatchListItem(user=request.user, listing=listing)
+            item.save()
+        elif action == 'Close':
+            None
+        elif action == 'Remove from Watchlist':
+            item = WatchListItem.objects.get(user=request.user, listing=listing)
+            item.delete()
         
+
+        return redirect(f'/listing/{listing.id}')
+
+    
+def watchlist(request):
+    watchlisted_items = WatchListItem.objects.filter(user=request.user)
+    print(watchlisted_items)
+    return render(request, "auctions/watchlist.html",{
+        'items': watchlisted_items
+    })

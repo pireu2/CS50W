@@ -1,0 +1,37 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<div class="card mb-3" style="width: 50vw;">
+    <div class="row g-0">
+      <div class="col-md-4">
+        {% if listing.image %}
+            <img src="{{listing.image}}" class="img-fluid rounded-start" alt="{{listing.title}}">
+        {% endif %}
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title"><strong>{{listing.title}}</strong></h5>
+          <p class="card-text"><strong>Price:</strong> ${{listing.price}}</p>
+          <p class="card-text">{{listing.description}}</p>
+          <p class="card-text"><small class="text-muted">{{listing.date}}</small></p>
+        </div>
+      </div>
+    </div>
+</div>
+<form action="/listing/{{listing.id}}" method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+        {% if watchlisted %}
+            <input class="btn btn-primary" type="submit" value="Remove from Watchlist" name="action">
+        {% else %}
+            <input class="btn btn-primary" type="submit" value="Watchlist" name="action">
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <input class="btn btn-danger" type="submit" value="Close" name="action">
+    </div>
+</form>
+<div>
+    Logged in as {{user.username}}
+</div>
+{% endblock %}

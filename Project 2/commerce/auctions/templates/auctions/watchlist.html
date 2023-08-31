@@ -1,0 +1,26 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <h2>Watchlist</h2>
+        {% for item in items %}
+            <div class="card mb-3" style="width: 50vw;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                    {% if item.listing.image %}
+                        <img src="{{item.listing.image}}" class="img-fluid rounded-start" alt="{{item.listing.title}}">
+                    {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title"><strong><a href="/listing/{{item.listing.id}}" >{{item.listing.title}}</a></strong></h5>
+                        <p class="card-text sm"><strong>Price:</strong> ${{item.listing.price}}</p>
+                        <p class="card-text">{{item.listing.description}}</p>
+                        <p class="card-text"><small class="text-muted">{{item.listing.date}}</small></p>
+                    </div>
+                    </div>
+                </div>
+                </div>
+        {% endfor %}
+    </div>
+{% endblock %}

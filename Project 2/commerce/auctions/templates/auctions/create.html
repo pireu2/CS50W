@@ -2,21 +2,22 @@
 
 {% block body %}
 <form action="{% url 'create' %}" method="POST" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    <h2 class="mb-3">Create Listing</h2>
     {% csrf_token %}
-    <div class="form-group" style="width: 50vw;">
-        <input class="form-control" autofocus type="text" name="title" placeholder="Title">
+    <div class="form-group mb-3" style="width: 50vw;">
+        <input class="form-control" autofocus type="text" name="title" placeholder="Title" required>
     </div>
-    <div class="form-group" style="width: 50vw;">
+    <div class="form-group mb-3" style="width: 50vw;">
         <label for="FormControlTextarea1">Description</label>
-        <textarea class="form-control" id="FormControlTextarea1" rows="3"></textarea>
+        <textarea class="form-control" id="FormControlTextarea1" rows="3" name="description" required></textarea>
       </div>
-    <div class="form-group" style="width: 50vw;">
-        <input class="form-control" autofocus type="number" name="price" placeholder="Price">
+    <div class="form-group mb-3" style="width: 50vw;">
+        <input class="form-control" autofocus type="number" name="price" placeholder="Price" required>
     </div>
-    <div class="form-group" style="width: 50vw;">
+    <div class="form-group mb-3" style="width: 50vw;">
         <input class="form-control" autofocus type="text" name="image" placeholder="Image Url">
     </div>
-    <div class="form-group" style="width: 50vw;">
+    <div class="form-group mb-3" style="width: 50vw;">
         <select class="form-control" name="category">
             {% for cat in categories %}
                 <option value={{cat}} > {{cat}} </option>
@@ -25,6 +26,9 @@
     </div>
 
     <input type="submit" value="Create" style="width: 10vw;">
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
     
 </form>
 {% endblock %}
