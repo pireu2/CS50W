@@ -1,0 +1,30 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<form action="{% url 'create' %}" method="POST" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    {% csrf_token %}
+    <div class="form-group" style="width: 50vw;">
+        <input class="form-control" autofocus type="text" name="title" placeholder="Title">
+    </div>
+    <div class="form-group" style="width: 50vw;">
+        <label for="FormControlTextarea1">Description</label>
+        <textarea class="form-control" id="FormControlTextarea1" rows="3"></textarea>
+      </div>
+    <div class="form-group" style="width: 50vw;">
+        <input class="form-control" autofocus type="number" name="price" placeholder="Price">
+    </div>
+    <div class="form-group" style="width: 50vw;">
+        <input class="form-control" autofocus type="text" name="image" placeholder="Image Url">
+    </div>
+    <div class="form-group" style="width: 50vw;">
+        <select class="form-control" name="category">
+            {% for cat in categories %}
+                <option value={{cat}} > {{cat}} </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <input type="submit" value="Create" style="width: 10vw;">
+    
+</form>
+{% endblock %}
