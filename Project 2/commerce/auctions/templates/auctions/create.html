@@ -1,5 +1,9 @@
 {% extends "auctions/layout.html" %}
 
+{% block title %}
+Create Listing
+{% endblock %}
+
 {% block body %}
 <form action="{% url 'create' %}" method="POST" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
     <h2 class="mb-3">Create Listing</h2>
@@ -25,7 +29,7 @@
         </select>
     </div>
 
-    <input type="submit" value="Create" style="width: 10vw;">
+    <input class="btn btn-primary" type="submit" value="Create" style="width: 10vw;">
     {% if message %}
         <div>{{ message }}</div>
     {% endif %}

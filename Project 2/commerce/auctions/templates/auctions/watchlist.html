@@ -1,5 +1,9 @@
 {% extends "auctions/layout.html" %}
 
+{% block title %}
+Watchlist
+{% endblock %}
+
 {% block body %}
     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
         <h2>Watchlist</h2>
@@ -21,6 +25,10 @@
                     </div>
                 </div>
                 </div>
+        {% empty %}
+        <div class="mb-3">
+            No items in watchlist.
+        </div>
         {% endfor %}
     </div>
 {% endblock %}

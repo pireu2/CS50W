@@ -97,17 +97,12 @@ def create(request):
 def listing(request, id):
     listing = AuctionListing.objects.get(id=id)
     if request.method == 'GET':
-        user = request.user
-        watchlisted = WatchListItem.objects.filter(user=request.user, listing=AuctionListing.objects.get(id=id))
-        if len(watchlisted) != 0:
-            watchlisted = True
-        else:
-            watchlisted = False
         return render(request, "auctions/listing.html", {
-            'listing': listing,
-            'user': user,
-            'watchlisted': watchlisted
-        })
+                    'listing': listing,
+                    'user': request.user,
+                    'watchlisted': WatchListItem.objects.filter(user=request.user, listing=listing).exists(),
+                    'loggedin': request.user.is_authenticated,
+                })
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'Watchlist':
@@ -117,8 +112,27 @@ def listing(request, id):
             None
         elif action == 'Remove from Watchlist':
             item = WatchListItem.objects.get(user=request.user, listing=listing)
-            item.delete()
-        
+            if item:
+                item.delete()
+        elif action == 'Bid':
+            try:
+                price = float(request.POST.get('bid'))
+                if price <= listing.price:
+                    raise ValueError
+            except ValueError:
+                message = 'The bid must be a number bigger than the current price!'
+                return render(request, "auctions/listing.html", {
+                    'listing': listing,
+                    'user': request.user,
+                    'watchlisted': WatchListItem.objects.filter(user=request.user, listing=listing).exists(),
+                    'loggedin': request.user.is_authenticated,
+                    'message': message,
+                })
+            bid = Bid(auction_listing = listing, price = price, user = request.user)
+            bid.save()
+            listing.price = price
+            listing.save()
+                
 
         return redirect(f'/listing/{listing.id}')
 
