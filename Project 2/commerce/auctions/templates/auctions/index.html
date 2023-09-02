@@ -21,6 +21,10 @@
                   </div>
                 </div>
               </div>
+        {% empty %}
+        <div class="mb-3">
+            No active listings.
+        </div>
         {% endfor %}
     </div>
 {% endblock %}

@@ -1,0 +1,23 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+Category
+{% endblock %}
+
+{% block body %}
+<h2 class="d-flex justify-content-center mb-3">Categories</h2>
+<div>
+    <form class="d-flex justify-content-center mb-3" method="post" action="{% url 'category'%}">
+        {% csrf_token %}
+        <div class="form-group mb-3 me-3" style="width: 20vw;">
+            <select class="form-control" name="category">
+                {% for cat in categories %}
+                    <option value={{cat}} > {{cat}} </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <input class="btn btn-primary mb-3" type="submit" value="Search" style="width: 10vw;">
+    </form>
+</div>
+{% endblock %}

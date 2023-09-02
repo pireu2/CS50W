@@ -93,27 +93,47 @@ def create(request):
                                      winner=None,
                                      date = datetime.now())
             listing.save()
+            id = listing.id
+            return redirect(f'/listing/{id}')
 
 def listing(request, id):
     listing = AuctionListing.objects.get(id=id)
     if request.method == 'GET':
-        return render(request, "auctions/listing.html", {
-                    'listing': listing,
-                    'user': request.user,
-                    'watchlisted': WatchListItem.objects.filter(user=request.user, listing=listing).exists(),
-                    'loggedin': request.user.is_authenticated,
-                })
+        if request.user.is_authenticated:
+            return render(request, "auctions/listing.html", {
+                        'listing': listing,
+                        'user': request.user,
+                        'watchlisted': WatchListItem.objects.filter(user=request.user, listing=listing).exists(),
+                        'loggedin': request.user.is_authenticated,
+                        'active': listing.active,
+                        'comments': Comment.objects.filter(auction_listing = listing)
+                    })
+        else:
+            return render(request, "auctions/listing.html", {
+                        'listing': listing,
+                        'user': request.user,
+                        'watchlisted': False,
+                        'loggedin': request.user.is_authenticated,
+                        'active': listing.active,
+                        'comments': Comment.objects.filter(auction_listing = listing)
+                    })
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'Watchlist':
             item = WatchListItem(user=request.user, listing=listing)
             item.save()
         elif action == 'Close':
-            None
+            listing.active = False
+            listing.save()
         elif action == 'Remove from Watchlist':
             item = WatchListItem.objects.get(user=request.user, listing=listing)
             if item:
                 item.delete()
+        elif action == 'Post Comment':
+            content = request.POST.get('comment')
+            if content:
+                comment = Comment(auction_listing = listing, author = request.user, content = content)
+                comment.save()
         elif action == 'Bid':
             try:
                 price = float(request.POST.get('bid'))
@@ -127,10 +147,12 @@ def listing(request, id):
                     'watchlisted': WatchListItem.objects.filter(user=request.user, listing=listing).exists(),
                     'loggedin': request.user.is_authenticated,
                     'message': message,
+                    'active' : listing.active
                 })
             bid = Bid(auction_listing = listing, price = price, user = request.user)
             bid.save()
             listing.price = price
+            listing.winner = request.user
             listing.save()
                 
 
@@ -143,3 +165,27 @@ def watchlist(request):
     return render(request, "auctions/watchlist.html",{
         'items': watchlisted_items
     })
+
+def category(request):
+    categories = [cat[0] for cat in AuctionListing.CATEGORIES]
+    if request.method == 'GET':
+        return render(request, "auctions/category.html", {
+            'categories' : categories,
+        })
+    if request.method == 'POST':
+        category = request.POST.get('category')
+        print(category)
+        return redirect(f'/categories/{category}')
+
+def categories(request, category):
+    categories = [cat[0] for cat in AuctionListing.CATEGORIES]
+    if category == '--':
+        listings = AuctionListing.objects.filter(active = True)
+    else:
+        listings = AuctionListing.objects.filter(category = category, active = True)
+    if request.method == 'GET':
+        return render(request, "auctions/categories.html", {
+            'category': category,
+            'categories' : categories,
+            'listings': listings
+        })

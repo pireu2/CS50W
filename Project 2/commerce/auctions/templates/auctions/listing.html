@@ -5,48 +5,83 @@
 {% endblock %}
 
 {% block body %}
-<div class="card mb-3" style="width: 50vw;">
-    <div class="row g-0">
-      <div class="col-md-4">
-        {% if listing.image %}
-            <img src="{{listing.image}}" class="img-fluid rounded-start" alt="{{listing.title}}">
-        {% endif %}
-      </div>
-      <div class="col-md-8">
-        <div class="card-body">
-          <h5 class="card-title"><strong>{{listing.title}}</strong></h5>
-          <p class="card-text"><strong>Price:</strong> ${{listing.price}}</p>
-          <p class="card-text">{{listing.description}}</p>
-          <p class="card-text"><small class="text-muted">{{listing.date}}</small></p>
+<div class="d-flex flex-row">
+    <div style="width: 45vw;">
+        <div class="card mb-3">
+            <div class="row g-0">
+            <div class="col-md-4">
+                {% if listing.image %}
+                    <img src="{{listing.image}}" class="img-fluid rounded-start" alt="{{listing.title}}">
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                <h5 class="card-title"><strong>{{listing.title}}</strong></h5>
+                <p class="card-text"><strong>Price:</strong> ${{listing.price}}</p>
+                <p class="card-text">{{listing.description}}</p>
+                <p class="card-text"><small class="text-muted">{{listing.date}}</small></p>
+                {% if not active and user.is_authenticated%}
+                    <div class="card-text">
+                        Auction won by {{listing.winner}} at ${{listing.price}}.
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+            </div>
         </div>
-      </div>
+        {% if loggedin %}
+        <form action="/listing/{{listing.id}}" method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                {% if watchlisted %}
+                    <input class="btn btn-primary" type="submit" value="Remove from Watchlist" name="action">
+                {% else %}
+                    <input class="btn btn-primary" type="submit" value="Watchlist" name="action">
+                {% endif %}
+            </div>
+            {% if user.username == listing.creator.username and active %}
+                <div class="mb-3">
+                    <input class="btn btn-danger" type="submit" value="Close" name="action">
+                </div>
+            {% elif active %}
+                <div class="mb-3 d-flex flex-row">
+                    <input class="form-control me-3" style="width: 200px;" type="number" name="bid" placeholder="Bid Value">
+                    <input class="btn btn-success" type="submit" value="Bid" name="action">
+                </div>
+                {% if message %}
+                <div calss="mb-3">
+                {{ message }}
+                </div>
+                {% endif %}
+            {% endif %}
+            <div class="mb-3">
+                <div class="form-group mb-3">
+                    <label for="FormControlTextarea1">Add Comment</label>
+                    <textarea class="form-control" id="FormControlTextarea1" rows="3" name="comment"></textarea>
+                </div>
+                <input class="btn btn-primary" type="submit" name="action" value="Post Comment">
+            </div>
+            
+        </form>
     </div>
-</div>
-{% if loggedin %}
-<form action="/listing/{{listing.id}}" method="POST">
-    {% csrf_token %}
-    <div class="mb-3">
-        {% if watchlisted %}
-            <input class="btn btn-primary" type="submit" value="Remove from Watchlist" name="action">
-        {% else %}
-            <input class="btn btn-primary" type="submit" value="Watchlist" name="action">
-        {% endif %}
+    <div style="width: 10vw;"></div>
+    <div class="mb-3" style="width: 45vw;">
+        <h5><strong>Comments</strong></h5>
+        {%for comment in comments%}
+            <div class="card mb-3">
+                <div class="card-header">
+                    {{comment.author}}
+                </div>
+                <div class="card-body">
+                    <blockquote class="blockquote mb-0">
+                        <p style="font-size: medium;">{{comment.content}}</p>
+                    </blockquote>
+                </div>
+            </div>
+        {% empty %}
+            <p style="font-size: medium;">No comments yet.</p>
+        {% endfor %}
     </div>
-    {% if user.username == listing.creator.username %}
-        <div class="mb-3">
-            <input class="btn btn-danger" type="submit" value="Close" name="action">
-        </div>
-    {% else %}
-        <div class="mb-3 d-flex flex-row">
-            <input class="form-control me-3" style="width: 200px;" type="number" name="bid" placeholder="Bid Value">
-            <input class="btn btn-success" type="submit" value="Bid" name="action">
-        </div>
-        {% if message %}
-        <div calss="mb-3">
-           {{ message }}
-        </div>
-        {% endif %}
     {% endif %}
-</form>
-{% endif %}
+</div>
 {% endblock %}
