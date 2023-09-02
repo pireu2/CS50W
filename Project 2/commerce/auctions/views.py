@@ -3,6 +3,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 
 from .models import User, AuctionListing, Bid, WatchListItem, Comment
 from datetime import datetime
@@ -64,7 +65,8 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
-    
+
+@login_required  
 def create(request):
     categories = [cat[0] for cat in AuctionListing.CATEGORIES]
     if request.method == 'GET':
@@ -158,7 +160,7 @@ def listing(request, id):
 
         return redirect(f'/listing/{listing.id}')
 
-    
+@login_required      
 def watchlist(request):
     watchlisted_items = WatchListItem.objects.filter(user=request.user)
     print(watchlisted_items)
