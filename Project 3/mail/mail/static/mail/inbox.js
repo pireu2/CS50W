@@ -87,6 +87,57 @@ function load_mailbox(mailbox) {
 
 }
 
+function handle_reply(id){
+    // Show compose view and hide other views
+    document.querySelector('#emails-view').style.display = 'none';
+    document.querySelector('#compose-view').style.display = 'block';
+    document.querySelector('#email-view').style.display = 'none';
+
+    fetch(`/emails/${id}`)
+    .then(response => response.json())
+    .then(email => {
+        document.querySelector('#compose-recipients').value = `${email.sender}`;
+        if(email.subject.startsWith('Re: ')){
+            document.querySelector('#compose-subject').value = `${email.subject}`;
+        }
+        else{
+            document.querySelector('#compose-subject').value = `Re: ${email.subject}`;
+        }
+        document.querySelector('#compose-body').value = `On ${email.timestamp} ${email.sender} wrote this: ${email.body}`;
+
+        document.querySelector('#compose-form').onsubmit = () =>{
+            let recipients = document.querySelector('#compose-recipients').value;
+            let subject = document.querySelector('#compose-subject').value;
+            let body = document.querySelector('#compose-body').value;
+    
+            fetch('/emails', {
+                method: 'POST',
+                body: JSON.stringify({
+                    recipients: recipients,
+                    subject: subject,
+                    body: body
+                })
+              })
+              .then(response => response.json())
+              .then(result => {
+                  // Print result
+                  console.log(result)
+                  if(result.message === "Email sent successfully."){
+                    load_mailbox('sent')
+                  }
+                  else{
+                    document.querySelector('#compose-recipients').value = '';
+                    document.querySelector('#compose-subject').value = '';
+                    document.querySelector('#compose-body').value = '';
+                    document.querySelector('#response').innerHTML = result.error;
+                  }
+              });
+    
+            return false;
+        };
+    })
+}
+
 function view_email(id){
     // Show compose view and hide other views
     document.querySelector('#emails-view').style.display = 'none';
@@ -114,6 +165,7 @@ function view_email(id){
         reply.id="reply";
         reply.innerHTML="Reply";
         div.append(reply);
+        reply.addEventListener('click', () => handle_reply(id))
 
         const archive = document.createElement('button');
         archive.classList="btn btn-sm btn-outline-primary";
