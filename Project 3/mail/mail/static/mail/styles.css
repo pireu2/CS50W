@@ -1,0 +1,25 @@
+textarea {
+    min-height: 400px;
+}
+
+.email{
+    border: 1px solid black;
+    border-radius: 5px;
+    display: grid;
+    grid-template-columns: auto 1fr auto; /* Defines three columns: auto, 1fr (auto-adjusting), and auto */
+    gap: 10px; /* Adjust the gap as needed */
+    margin: 0 auto 2px; /* Center the grid container horizontally */
+    cursor: pointer;
+}
+
+.sender{
+    font-weight: bold;
+    padding-left: 2px;
+}
+
+
+
+.time{
+    color:grey;
+    padding-right: 2px;
+}
