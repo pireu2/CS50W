@@ -1,5 +1,16 @@
 {% extends "network/layout.html" %}
 
+{% block script %}
+    <script src="/static/network/index.js"></script>
+{% endblock %}
+
 {% block body %}
-    TODO
+    <div style="border: 1px solid rgb(196, 196, 196); border-radius: 5px;" class="p-2">
+        <h3 class="mb-3">New Post</h3>
+        <form class="mb-3" action="/post" id="post-form">
+            {% csrf_token %}
+            <textarea class="form-control mb-3" id="content"></textarea>
+            <input type="submit" class="btn btn-primary" value="Post" id="post">
+        </form>
+    </div>
 {% endblock %}

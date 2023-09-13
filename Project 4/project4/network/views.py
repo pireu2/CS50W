@@ -62,3 +62,12 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+    
+def post(request):
+    if request.method == "POST":
+        print('postt')
+    return HttpResponseRedirect(reverse("index"))
+
+
+
+
