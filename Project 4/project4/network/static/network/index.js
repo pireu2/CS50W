@@ -134,6 +134,7 @@ function getPosts(){
                     .catch(error => {
                         console.log(error);
                     })
+                    
                 });
             }
 
