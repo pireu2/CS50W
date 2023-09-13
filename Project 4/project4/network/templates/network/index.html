@@ -5,12 +5,16 @@
 {% endblock %}
 
 {% block body %}
-    <div style="border: 1px solid rgb(196, 196, 196); border-radius: 5px;" class="p-2">
+    {% if user.is_authenticated %}
+    <div style="border: 1px solid rgb(196, 196, 196); border-radius: 5px;" class="p-2 mb-3">
         <h3 class="mb-3">New Post</h3>
-        <form class="mb-3" action="/post" id="post-form">
+        <form class="mb-3" action="/post" id="post-form" method="POST">
             {% csrf_token %}
-            <textarea class="form-control mb-3" id="content"></textarea>
+            <textarea class="form-control mb-3" name="content" id="content"></textarea>
             <input type="submit" class="btn btn-primary" value="Post" id="post">
         </form>
+        <p id="error"></p>      
     </div>
+    {% endif %} 
+    <div id="posts"></div> 
 {% endblock %}

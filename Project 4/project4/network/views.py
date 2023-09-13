@@ -4,8 +4,11 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.http import JsonResponse
+import json
+import datetime
 
-from .models import User
+from .models import User, Post, Comment, Like
 
 
 def index(request):
@@ -62,12 +65,58 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
-    
+
+@login_required
 def post(request):
-    if request.method == "POST":
-        print('postt')
-    return HttpResponseRedirect(reverse("index"))
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    data = json.loads(request.body)
+    content = data.get('content')
+    if content == '':
+        return JsonResponse({"error": "Post requires content"}, status = 400 )
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Must be authenticated to post"}, status = 400)
+    post = Post(
+        author = request.user,
+        content = content,
+        timestamp = datetime.datetime.now(),
+        likes = 0
+    )
+    post.save()
+    return JsonResponse({"message": "Post Success", "status": 200}, status=200)
 
+def get_posts(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    posts = Post.objects.all()
+    posts = posts.order_by("-timestamp").all()
+    print(posts)
+    return JsonResponse([post.serialize() for post in posts], safe=False)
 
+@login_required
+def like(request, post_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    post = Post.objects.get(id = post_id)
+    like_exists = Like.objects.filter(user=request.user, post=post).exists()
+    if like_exists:
+        post.likes -= 1
+        like = Like.objects.filter(user=request.user, post=post)
+        like.delete()
+    else:
+        post.likes += 1
+        like = Like(
+            user=request.user,
+            post=post
+        )
+        like.save()
+    post.save()
+    return JsonResponse({"message": "Like Success", "status": 200, "likes" : post.likes}, status=200)
 
-
+@login_required
+def isliked(request, post_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    post = Post.objects.get(id = post_id)
+    like_exists = Like.objects.filter(user=request.user, post=post).exists()
+    return JsonResponse({"message": "Like Success", "status": 200, "isliked" : like_exists}, status=200)
