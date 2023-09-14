@@ -134,10 +134,9 @@ function getPosts(){
                     .catch(error => {
                         console.log(error);
                     })
-                    
+
                 });
             }
-
             document.querySelector('#posts').append(div);
             
         })
