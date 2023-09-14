@@ -1,11 +1,23 @@
 document.addEventListener('DOMContentLoaded', () =>
 {
-    let post = document.querySelector('#post')
-    if (post !== null){
-        post.addEventListener('click', post)
+    const isAuthenticated = checkAuthentication();
+    const isOnProfile = checkProfile();
+    if (isAuthenticated && !isOnProfile){
+        document.addEventListener('click', post)
     }
-    getPosts()
+    if (isOnProfile){
+        getPostsByUser(profile)
+    }
+    else{
+        getPosts()
+    }
 });
+
+function checkProfile(){
+    postfield = document.querySelector('#posts');
+    profile = postfield.getAttribute('data-user');
+    return profile;
+}
 
 
 function post() {
@@ -29,6 +41,8 @@ function post() {
         .then(result => {
             if(result.status === 200){
                 contentTextarea.value='';
+                getPosts();
+                console.log('da');
             }
             else{
                 document.querySelector('#error').innerHTML = result.error
@@ -43,13 +57,113 @@ function post() {
 }
 
 
-function like(id){
-    const csrfToken = getCookie('csrftoken');
-    
+function checkAuthentication(){
+    const isAuthenticatedDiv = document.querySelector('#is_authenticated');
+    const isAuthenticated = isAuthenticatedDiv.getAttribute('data-isauthenticated')
+    if (isAuthenticated === "True"){
+        return true;
+    }
+    else{
+        return false;
+    }
 }
+
+function user(username){
+    window.location.href = `/user/${username}`;
+}
+
+function renderPost(post, postsContainer){
+    const csrfToken = getCookie('csrftoken');
+    const div = document.createElement('div');
+    div.className = 'post';
+    div.innerHTML = `
+    <div class="card mb-3">
+        <h5 class="card-header">
+            <div class="user" style="cursor: pointer; display: inline-block;">
+                <img src="/static/network/avatar.png" alt="Avatar Image" class="avatar">
+                ${post.author}
+            </div> 
+        </h5>
+        <div class="card-body" >
+            <p class="text-muted">${post.timestamp}</p>
+            <p class="card-text">${post.content}</p>
+            <p class="cart-text" id="like-block"> 
+                <img src="/static/network/like.png" alt="Like Image" class="like">
+                <span class="like-count">${post.likes}</span>
+            </p>
+            <a href="#" class="link-secondary">Comments</a>
+        </div>
+    </div>
+    `;
+
+    div.querySelector(".user").onclick = () =>{
+        user(post.author)
+    };
+
+
+    const isAuthenticated = checkAuthentication();
+    if (isAuthenticated){
+        const likeImage = div.querySelector('.like');
+        let isliked = false;
+        fetch(`/isliked/${post.id}`, {
+            method : 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+        })
+        .then(response => response.json())
+        .then(result => {
+            isliked = result.isliked;
+            if (isliked){
+                div.querySelector('.like').src = "/static/network/like-blue.png";
+            }
+            else{
+                div.querySelector('.like').src = "/static/network/like.png";
+            }
+        })
+        .catch(error => {
+            console.log(error);
+        })
+
+        likeImage.addEventListener('click', () => {
+            fetch(`/like/${post.id}`, {
+                method : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+            })
+            .then(response => response.json())
+            .then(result => {
+                div.querySelector('.like-count').innerHTML = `${result.likes}`;
+                image = div.querySelector('.like');
+                isliked = !isliked;
+                if (isliked){
+                    image.src = "/static/network/like-blue.png";
+                }
+                else{
+                    image.src = "/static/network/like.png";
+                }
+            })
+            .catch(error => {
+                console.log(error);
+            })
+
+        });
+    }
+    postsContainer.append(div);
+}
+
 
 function getPosts(){
     const csrfToken = getCookie('csrftoken');
+    const postsContainer = document.querySelector('#posts');
+
+    while (postsContainer.firstChild) {
+        postsContainer.removeChild(postsContainer.firstChild);
+    }
+
     fetch('/get_posts', {
         method : 'POST',
         headers: {
@@ -59,87 +173,31 @@ function getPosts(){
     })
     .then(response => response.json())
     .then(result => {
-        result.forEach(post => {
-            const div = document.createElement('div');
-            div.className = 'post';
-            div.innerHTML = `
-            <div class="card mb-3">
-                <h5 class="card-header"> 
-                    <img src="/static/network/avatar.png" alt="Avatar Image" class="avatar">
-                    ${post.author}
-                </h5>
-                <div class="card-body">
-                    <p class="text-muted">${post.timestamp}</p>
-                    <p class="card-text">${post.content}</p>
-                    <p class="cart-text" id="like-block"> 
-                        <img src="/static/network/like.png" alt="Like Image" class="like">
-                        <span class="like-count">${post.likes}</span>
-                    </p>
-                    <a href="#" class="link-secondary">Comments</a>
-                </div>
-            </div>
-            `;
+        result.forEach(post => renderPost(post, postsContainer))
+    })
+    .catch(error =>{
+        console.log(error);
+    })
+}
 
-            let isAuthenticated = false;
-            if (document.querySelector('#post-form')){
-                isAuthenticated = true;
-            }
-            
+function getPostsByUser(username){
+    const csrfToken = getCookie('csrftoken');
+    const postsContainer = document.querySelector('#posts');
 
+    while (postsContainer.firstChild) {
+        postsContainer.removeChild(postsContainer.firstChild);
+    }
 
-            if (isAuthenticated){
-                const likeImage = div.querySelector('.like');
-                let isliked = false;
-                fetch(`/isliked/${post.id}`, {
-                    method : 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
-                    },
-                })
-                .then(response => response.json())
-                .then(result => {
-                    isliked = result.isliked;
-                    if (isliked){
-                        div.querySelector('.like').src = "/static/network/like-blue.png";
-                    }
-                    else{
-                        div.querySelector('.like').src = "/static/network/like.png";
-                    }
-                })
-                .catch(error => {
-                    console.log(error);
-                })
-
-                likeImage.addEventListener('click', () => {
-                    fetch(`/like/${post.id}`, {
-                        method : 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken
-                        },
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        div.querySelector('.like-count').innerHTML = `${result.likes}`;
-                        image = div.querySelector('.like');
-                        isliked = !isliked;
-                        if (isliked){
-                            image.src = "/static/network/like-blue.png";
-                        }
-                        else{
-                            image.src = "/static/network/like.png";
-                        }
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    })
-
-                });
-            }
-            document.querySelector('#posts').append(div);
-            
-        })
+    fetch(`/get_posts_by_user/${username}`, {
+        method : 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+    })
+    .then(response => response.json())
+    .then(result => {
+        result.forEach(post => renderPost(post, postsContainer))
     })
     .catch(error =>{
         console.log(error);

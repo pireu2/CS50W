@@ -8,7 +8,7 @@ from django.http import JsonResponse
 import json
 import datetime
 
-from .models import User, Post, Comment, Like
+from .models import User, Post, Comment, Like, Follow
 
 
 def index(request):
@@ -93,6 +93,15 @@ def get_posts(request):
     print(posts)
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
+def get_posts_by_user(request, username):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    user = User.objects.get(username=username)
+    posts = Post.objects.filter(author=user)
+    posts = posts.order_by("-timestamp").all()
+    print(posts)
+    return JsonResponse([post.serialize() for post in posts], safe=False)
+
 @login_required
 def like(request, post_id):
     if request.method != "POST":
@@ -120,3 +129,13 @@ def isliked(request, post_id):
     post = Post.objects.get(id = post_id)
     like_exists = Like.objects.filter(user=request.user, post=post).exists()
     return JsonResponse({"message": "Like Success", "status": 200, "isliked" : like_exists}, status=200)
+
+def user(request, username):
+    user = User.objects.get(username = username)
+    followers = Follow.objects.filter(following=user).count()
+    following = Follow.objects.filter(follower=user).count()
+    return render(request, "network/user.html", {
+        "user_data" : user,
+        "followers": followers,
+        "following": following
+    })

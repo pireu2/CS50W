@@ -2,8 +2,17 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+
 class User(AbstractUser):
-    pass
+    following = models.ManyToManyField('self', through='Follow', symmetrical=False, related_name='user_following')
+    
+class Follow(models.Model):
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followed_by')
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follows')
+
+    def __str__(self):
+        return f'{self.follower} is following {self.following}'
+
 
 class Post(models.Model):
     id= models.AutoField(primary_key=True)
