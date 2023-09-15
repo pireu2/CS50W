@@ -1,0 +1,13 @@
+{% extends "network/layout.html" %}
+
+{% block script %}
+    <script src="/static/network/index.js"></script>
+{% endblock %}
+
+{% block body %}
+<h2 style="text-align: center;"><strong>Following Posts</strong></h2>
+{% if user.is_authenticated %}
+    <div id="posts" data-following="true" data-current-user="{{user.username}}" class="pt-5"></div>
+{% endif %}
+
+{% endblock %}

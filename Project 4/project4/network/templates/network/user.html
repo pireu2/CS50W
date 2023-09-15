@@ -10,17 +10,22 @@
     <div class="user-follow">
         <h2>{{ user_data.username }}</h2>
         {% if user.username != user_data.username and user.is_authenticated %}
-            <input class="btn btn-primary" style="width: 100px;" value="Follow">
+            {% if unfollow %}
+                <input class="btn btn-primary" style="width: 100px;" value="Unfollow" id="follow-button">
+            {% else %}
+                <input class="btn btn-primary" style="width: 100px;" value="Follow" id="follow-button">
+            {% endif %}
         {% endif %}
     </div>
+    <div id="error"></div>
     <div class="following-container">
         <div>Followers</div>
         <div>Following</div>
-        <div>{{ followers }}</div>
-        <div>{{ following }}</div>
+        <div id="followers">{{ followers }}</div>
+        <div id="following">{{ following }}</div>
     </div>
 </div>
-<div id="posts" data-user="{{user_data.username}}" class="pt-5">
+<div id="posts" data-user="{{user_data.username}}" data-current-user="{{user.username}}" class="pt-5">
 </div>
 
 {% endblock %}

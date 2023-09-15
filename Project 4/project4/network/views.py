@@ -90,7 +90,6 @@ def get_posts(request):
         return JsonResponse({"error": "POST request required."}, status=400)
     posts = Post.objects.all()
     posts = posts.order_by("-timestamp").all()
-    print(posts)
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 def get_posts_by_user(request, username):
@@ -99,7 +98,6 @@ def get_posts_by_user(request, username):
     user = User.objects.get(username=username)
     posts = Post.objects.filter(author=user)
     posts = posts.order_by("-timestamp").all()
-    print(posts)
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 @login_required
@@ -134,8 +132,73 @@ def user(request, username):
     user = User.objects.get(username = username)
     followers = Follow.objects.filter(following=user).count()
     following = Follow.objects.filter(follower=user).count()
+    if request.user.is_authenticated:
+        unfollow = Follow.objects.filter(follower=request.user, following=user).exists()
+    else:
+        unfollow = False
     return render(request, "network/user.html", {
         "user_data" : user,
         "followers": followers,
-        "following": following
+        "following": following,
+        "unfollow": unfollow
     })
+
+@login_required
+def follow(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    data = json.loads(request.body)
+    following_username = data.get('user_to_follow')
+    following_user = User.objects.get(username=following_username)
+    already_exists = Follow.objects.filter(follower = request.user, following = following_user).exists()
+    if already_exists:
+        return JsonResponse({"error": "Already following this user"}, status=400)
+    follow_object = Follow(
+        follower = request.user,
+        following = following_user
+    )
+    follow_object.save()
+    return JsonResponse({"message": "Follow Sucess", "status": 200}, status=200)
+
+@login_required
+def unfollow(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    data = json.loads(request.body)
+    unfollowing_username = data.get('user_to_unfollow')
+    unfollowing_user = User.objects.get(username=unfollowing_username)
+    already_exists = Follow.objects.filter(follower = request.user, following = unfollowing_user).exists()
+    if not already_exists:
+        return JsonResponse({"error": "Cannot unfollow a user you don't follow"}, status=400)
+    follow_object = Follow.objects.get(follower = request.user,following = unfollowing_user)
+    follow_object.delete()
+    return JsonResponse({"message": "Unfollow Sucess", "status": 200}, status=200)
+
+@login_required
+def get_posts_following(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    users_followed_by_current_user = request.user.following.all()
+    print(users_followed_by_current_user)
+    posts = Post.objects.filter(author__in=users_followed_by_current_user)
+    posts = posts.order_by("-timestamp").all()
+    return JsonResponse([post.serialize() for post in posts], safe=False)
+
+@login_required
+def following(request):
+    return render(request, 'network/following.html')
+
+@login_required
+def edit(request, post_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    data = json.loads(request.body)
+    content = data.get('new_content')
+    if content == '':
+        return JsonResponse({"error": "Post requires content"}, status = 400 )
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Must be authenticated to post"}, status = 400)
+    post = Post.objects.get(id = post_id)
+    post.content = content
+    post.save()
+    return JsonResponse({"message": "Post Success", "status": 200}, status=200)
