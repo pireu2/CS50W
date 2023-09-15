@@ -151,7 +151,6 @@ function user(username){
     window.location.href = `/user/${username}`;
 }
 
-
 function renderPost(post, postsContainer){
     const csrfToken = getCookie('csrftoken');
     const div = document.createElement('div');
