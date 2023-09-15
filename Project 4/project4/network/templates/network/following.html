@@ -8,6 +8,12 @@
 <h2 style="text-align: center;"><strong>Following Posts</strong></h2>
 {% if user.is_authenticated %}
     <div id="posts" data-following="true" data-current-user="{{user.username}}" class="pt-5"></div>
+    <div class="d-flex justify-content-center">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary" id="prev-button">Previous</button>
+            <button type="button" class="btn btn-primary" id="next-button">Next</button>
+        </div>
+    </div>
 {% endif %}
 
 {% endblock %}

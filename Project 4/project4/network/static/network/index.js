@@ -1,3 +1,6 @@
+const postsPerPage = 10;
+
+
 document.addEventListener('DOMContentLoaded', () =>
 {
     const isAuthenticated = checkAuthentication();
@@ -7,12 +10,10 @@ document.addEventListener('DOMContentLoaded', () =>
         document.addEventListener('click', post)
     }
     if (isOnProfile){
-        if (isAuthenticated){
-            getPostsByUser(profile)
-            document.querySelector('#follow-button').addEventListener('click', follow)
-        }
-        else{
-            getPostsByUser(profile);
+        getPostsByUser(isOnProfile)
+        followButton = document.querySelector('#follow-button');
+        if(followButton){
+            followButton.addEventListener('click', follow);
         }
     }
     else if (isOnFollowing){
@@ -25,8 +26,8 @@ document.addEventListener('DOMContentLoaded', () =>
 });
 
 function checkFollowing(){
-    postfield = document.querySelector('#posts');
-    following = postfield.getAttribute('data-following');
+    let postfield = document.querySelector('#posts');
+    let following = postfield.getAttribute('data-following');
     if (following === 'true'){
         return true;
     }
@@ -36,20 +37,20 @@ function checkFollowing(){
 }
 
 function checkProfile(){
-    postfield = document.querySelector('#posts');
-    profile = postfield.getAttribute('data-user');
+    const postfield = document.querySelector('#posts');
+    const profile = postfield.getAttribute('data-user');
     return profile;
 }
 
 function follow(){
-    currentUser = document.querySelector('#posts').getAttribute('data-current-user');
-    profileUser = document.querySelector('#posts').getAttribute('data-user');
+    const currentUser = document.querySelector('#posts').getAttribute('data-current-user');
+    const profileUser = document.querySelector('#posts').getAttribute('data-user');
     const csrfToken = getCookie('csrftoken');
     if (currentUser == profileUser){
         return;
     }
-    button = document.querySelector('#follow-button');
-    buttonValue = button.value;
+    const button = document.querySelector('#follow-button');
+    let buttonValue = button.value;
     if (button.value === 'Follow'){
         fetch(`/follow`, {
             method: 'POST',
@@ -109,7 +110,7 @@ function follow(){
 }
 
 function post() {
-    postform = document.querySelector('#post-form')
+    const postform = document.querySelector('#post-form')
     if (postform){
         postform.onsubmit = (event) =>{
             event.preventDefault();
@@ -205,9 +206,6 @@ function renderPost(post, postsContainer){
             
             saveButton.addEventListener('click', () => {
                 const editedContent = div.querySelector('#edit-body').value;
-                // Send the edited content to the server for saving
-                // You'll need to implement the server-side logic for saving the edited content
-                // Once saved, you can update the UI with the edited content
                 fetch(`/edit/${post.id}`, {
                     method: 'POST',
                     headers: {
@@ -294,28 +292,7 @@ function renderPost(post, postsContainer){
     postsContainer.append(div);
 }
 
-function getFollowingPosts(){
-    const csrfToken = getCookie('csrftoken');
-    const postsContainer = document.querySelector('#posts');
-
-    fetch('/get_posts_following', {
-        method : 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-        },
-    })
-    .then(response => response.json())
-    .then(result => {
-        result.forEach(post => renderPost(post, postsContainer))
-    })
-    .catch(error =>{
-        console.log(error);
-    })
-}
-
-
-function getPosts(){
+function getFollowingPosts(page = 1){
     const csrfToken = getCookie('csrftoken');
     const postsContainer = document.querySelector('#posts');
 
@@ -323,25 +300,105 @@ function getPosts(){
         postsContainer.removeChild(postsContainer.firstChild);
     }
 
-    fetch('/get_posts', {
+    removeAllEventListeners(document.querySelector('#prev-button'));
+    removeAllEventListeners(document.querySelector('#next-button'));
+
+    fetch('/get_posts_following', {
         method : 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrfToken
         },
+        body: JSON.stringify({
+            page : page
+        })
     })
     .then(response => response.json())
     .then(result => {
-        result.forEach(post => renderPost(post, postsContainer))
+        result.data.forEach(post => renderPost(post, postsContainer))
+        const totalPosts = result.total_posts;
+        const totalPages = Math.ceil(totalPosts / postsPerPage);
+        document.querySelector('#prev-button').disabled = page === 1;
+        document.querySelector('#next-button').disabled = page === totalPages;
+        document.querySelector('#prev-button').addEventListener('click', () => {
+            if (page > 1) {
+                getFollowingPosts(page - 1);
+            }
+        }); 
+        document.querySelector('#next-button').addEventListener('click', () => {
+            if (page < totalPages){
+                getFollowingPosts(page + 1);
+            }
+        });
     })
     .catch(error =>{
         console.log(error);
     })
 }
 
-function getPostsByUser(username){
+function removeAllEventListeners(element) {
+    if(element === null){
+        return;
+    }
+    const clonedElement = element.cloneNode(true);
+    element.parentNode.replaceChild(clonedElement, element);
+}
+
+
+function getPosts(page = 1){
     const csrfToken = getCookie('csrftoken');
     const postsContainer = document.querySelector('#posts');
+
+    while (postsContainer.firstChild) {
+        postsContainer.removeChild(postsContainer.firstChild);
+    }
+
+    removeAllEventListeners(document.querySelector('#prev-button'));
+    removeAllEventListeners(document.querySelector('#next-button'));
+
+    fetch(`/get_posts`, {
+        method : 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            page : page
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        result.data.forEach(post => renderPost(post, postsContainer))
+        const totalPosts = result.total_posts;
+        const totalPages = Math.ceil(totalPosts / postsPerPage);
+        document.querySelector('#prev-button').disabled = page === 1;
+        document.querySelector('#next-button').disabled = page === totalPages;
+        document.querySelector('#prev-button').addEventListener('click', () => {
+            if (page > 1) {
+                getPosts(page - 1);
+            }
+        }); 
+        document.querySelector('#next-button').addEventListener('click', () => {
+            if (page < totalPages){
+                getPosts(page + 1);
+            }
+        });
+    })
+    .catch(error =>{
+        console.log(error);
+    })
+}
+
+function getPostsByUser(username, page = 1){
+    const csrfToken = getCookie('csrftoken');
+    const postsContainer = document.querySelector('#posts');
+
+    while (postsContainer.firstChild) {
+        postsContainer.removeChild(postsContainer.firstChild);
+    }
+
+    removeAllEventListeners(document.querySelector('#prev-button'));
+    removeAllEventListeners(document.querySelector('#next-button'));
 
     fetch(`/get_posts_by_user/${username}`, {
         method : 'POST',
@@ -349,10 +406,27 @@ function getPostsByUser(username){
             'Content-Type': 'application/json',
             'X-CSRFToken': csrfToken
         },
+        body: JSON.stringify({
+            page : page
+        })
     })
     .then(response => response.json())
     .then(result => {
-        result.forEach(post => renderPost(post, postsContainer))
+        result.data.forEach(post => renderPost(post, postsContainer))
+        const totalPosts = result.total_posts;
+        const totalPages = Math.ceil(totalPosts / postsPerPage);
+        document.querySelector('#prev-button').disabled = page === 1;
+        document.querySelector('#next-button').disabled = page === totalPages;
+        document.querySelector('#prev-button').addEventListener('click', () => {
+            if (page > 1) {
+                getPostsByUser(username, page - 1);
+            }
+        }); 
+        document.querySelector('#next-button').addEventListener('click', () => {
+            if (page < totalPages){
+                getPostsByUser(username, page + 1);
+            }
+        });
     })
     .catch(error =>{
         console.log(error);

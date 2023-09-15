@@ -18,4 +18,11 @@
     </div>
     {% endif %} 
     <div id="posts" data-current-user="{{user.username}}"></div> 
+
+    <div class="d-flex justify-content-center">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary" id="prev-button">Previous</button>
+            <button type="button" class="btn btn-primary" id="next-button">Next</button>
+        </div>
+    </div>
 {% endblock %}

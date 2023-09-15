@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -88,9 +89,25 @@ def post(request):
 def get_posts(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
+    # posts = Post.objects.all()
+    # posts = posts.order_by("-timestamp").all()
+    # return JsonResponse([post.serialize() for post in posts], safe=False)
+
+    data = json.loads(request.body)
+    page = data.get('page')
+    items_per_page = 10 
+    start_index = (page - 1) * items_per_page
+    end_index = page * items_per_page
+    
     posts = Post.objects.all()
+    total_posts = posts.count()
+
     posts = posts.order_by("-timestamp").all()
-    return JsonResponse([post.serialize() for post in posts], safe=False)
+    posts_subset = posts[start_index:end_index]
+    return JsonResponse({
+        "data": [post.serialize() for post in posts_subset],
+        "total_posts": total_posts
+    }, safe=False)
 
 def get_posts_by_user(request, username):
     if request.method != "POST":
@@ -98,7 +115,22 @@ def get_posts_by_user(request, username):
     user = User.objects.get(username=username)
     posts = Post.objects.filter(author=user)
     posts = posts.order_by("-timestamp").all()
-    return JsonResponse([post.serialize() for post in posts], safe=False)
+
+    data = json.loads(request.body)
+    page = data.get('page')
+    items_per_page = 10 
+    start_index = (page - 1) * items_per_page
+    end_index = page * items_per_page
+    
+    total_posts = posts.count()
+    posts_subset = posts[start_index:end_index]
+    return JsonResponse({
+        "data": [post.serialize() for post in posts_subset],
+        "total_posts": total_posts
+    }, safe=False)
+
+
+    
 
 @login_required
 def like(request, post_id):
@@ -179,10 +211,20 @@ def get_posts_following(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
     users_followed_by_current_user = request.user.following.all()
-    print(users_followed_by_current_user)
     posts = Post.objects.filter(author__in=users_followed_by_current_user)
     posts = posts.order_by("-timestamp").all()
-    return JsonResponse([post.serialize() for post in posts], safe=False)
+    data = json.loads(request.body)
+    page = data.get('page')
+    items_per_page = 10 
+    start_index = (page - 1) * items_per_page
+    end_index = page * items_per_page
+    
+    total_posts = posts.count()
+    posts_subset = posts[start_index:end_index]
+    return JsonResponse({
+        "data": [post.serialize() for post in posts_subset],
+        "total_posts": total_posts
+    }, safe=False)
 
 @login_required
 def following(request):
