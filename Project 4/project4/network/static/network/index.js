@@ -9,17 +9,16 @@ document.addEventListener('DOMContentLoaded', () =>
     if (isAuthenticated && !isOnProfile){
         document.addEventListener('click', post)
     }
-    if (isOnProfile){
+    let followButton;
+    if (isOnProfile) {
         getPostsByUser(isOnProfile)
         followButton = document.querySelector('#follow-button');
-        if(followButton){
+        if (followButton) {
             followButton.addEventListener('click', follow);
         }
-    }
-    else if (isOnFollowing){
+    } else if (isOnFollowing) {
         getFollowingPosts();
-    }
-    else{
+    } else {
 
         getPosts();
     }
@@ -28,25 +27,19 @@ document.addEventListener('DOMContentLoaded', () =>
 function checkFollowing(){
     let postfield = document.querySelector('#posts');
     let following = postfield.getAttribute('data-following');
-    if (following === 'true'){
-        return true;
-    }
-    else{
-        return false;
-    }
+    return following === 'true';
 }
 
 function checkProfile(){
     const postfield = document.querySelector('#posts');
-    const profile = postfield.getAttribute('data-user');
-    return profile;
+    return postfield.getAttribute('data-user');
 }
 
 function follow(){
     const currentUser = document.querySelector('#posts').getAttribute('data-current-user');
     const profileUser = document.querySelector('#posts').getAttribute('data-user');
     const csrfToken = getCookie('csrftoken');
-    if (currentUser == profileUser){
+    if (currentUser === profileUser){
         return;
     }
     const button = document.querySelector('#follow-button');
@@ -151,12 +144,7 @@ function post() {
 function checkAuthentication(){
     const isAuthenticatedDiv = document.querySelector('#is_authenticated');
     const isAuthenticated = isAuthenticatedDiv.getAttribute('data-isauthenticated')
-    if (isAuthenticated === "True"){
-        return true;
-    }
-    else{
-        return false;
-    }
+    return isAuthenticated === "True";
 }
 
 function user(username){
@@ -187,7 +175,7 @@ function renderPost(post, postsContainer){
         </div>
     </div>
     `;
-    currentUser = document.querySelector('#posts').getAttribute('data-current-user')
+    const currentUser = document.querySelector('#posts').getAttribute('data-current-user')
     if (currentUser === post.author) {
         const buttonPlace = div.querySelector('#button-place');
         buttonPlace.innerHTML = '<button id="edit-button" class="btn btn-secondary" style="width: 60px;">Edit</button>';
@@ -274,7 +262,7 @@ function renderPost(post, postsContainer){
             .then(response => response.json())
             .then(result => {
                 div.querySelector('.like-count').innerHTML = `${result.likes}`;
-                image = div.querySelector('.like');
+                let image = div.querySelector('.like');
                 isliked = !isliked;
                 if (isliked){
                     image.src = "/static/network/like-blue.png";
