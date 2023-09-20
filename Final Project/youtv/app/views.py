@@ -7,7 +7,8 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.http import JsonResponse
 
-from .models import User
+from .models import User, Video
+from . import forms
 # Create your views here.
 
 def index(request):
@@ -16,22 +17,25 @@ def index(request):
 
 def login_view(request):
     if request.method == "POST":
-
+        form = forms.LoginForm(request.POST)
         # Attempt to sign user in
-        username = request.POST["username"]
-        password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
-
-        # Check if authentication successful
-        if user is not None:
-            login(request, user)
-            return HttpResponseRedirect(reverse("index"))
-        else:
-            return render(request, "app/login.html", {
-                "message": "Invalid username and/or password."
-            })
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            # Check if authentication successful
+            if user is not None:
+                login(request, user)
+                return HttpResponseRedirect(reverse("index"))
+            else:
+                form = forms.LoginForm()
+                return render(request, "app/login.html", {
+                    "message": "Invalid username or password",
+                    "form": form
+                })
     else:
-        return render(request, "app/login.html")
+        form = forms.LoginForm()
+        return render(request, "app/login.html", {"form": form})
 
 
 def logout_view(request):
@@ -41,26 +45,53 @@ def logout_view(request):
 
 def register(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        email = request.POST["email"]
+        form = forms.RegistrationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
 
-        # Ensure password matches confirmation
-        password = request.POST["password"]
-        confirmation = request.POST["confirmation"]
-        if password != confirmation:
-            return render(request, "app/register.html", {
-                "message": "Passwords must match."
-            })
+            # Ensure password matches confirmation
+            password = form.cleaned_data["password"]
+            confirmation = form.cleaned_data["confirmation"]
+            if password != confirmation:
+                form = forms.RegistrationForm()
+                return render(request, "app/register.html", {
+                    "message": "Passwords must match.",
+                    "form": form
+                })
 
-        # Attempt to create new user
-        try:
-            user = User.objects.create_user(username, email, password)
-            user.save()
-        except IntegrityError:
-            return render(request, "app/register.html", {
-                "message": "Username already taken."
-            })
-        login(request, user)
-        return HttpResponseRedirect(reverse("index"))
+            # Attempt to create new user
+            try:
+                user = User.objects.create_user(username, email, password)
+                user.save()
+            except IntegrityError:
+                form = forms.RegistrationForm()
+                return render(request, "app/register.html", {
+                    "message": "Username already taken.",
+                    "form": form
+                })
+            login(request, user)
+            return HttpResponseRedirect(reverse("index"))
     else:
-        return render(request, "app/register.html")
+        form = forms.RegistrationForm()
+        return render(request, "app/register.html", {"form": form})
+
+@login_required
+def upload(request):
+    if request.method == "POST":
+        form = forms.VideoForm(request.POST, request.FILES)
+        if form.is_valid():
+            max_size = 250 * 1024 * 1024
+            video = form.cleaned_data['video']
+
+            if video.size > max_size:
+                form.add_error('video', 'File size must be less than 250 MB.')
+            else:
+                title = form.cleaned_data['title']
+                description = form.cleaned_data['description']
+                video = Video(title = title, creator = request.user, description = description, video = video)
+                video.save()
+                return HttpResponseRedirect(reverse("index"))
+    else:
+        form = forms.VideoForm()
+    return render(request, 'app/upload.html', {'form': form})
