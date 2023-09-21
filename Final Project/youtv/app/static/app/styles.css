@@ -1,0 +1,83 @@
+:root {
+    --light: #f6f6f9;
+    --primary: #990606;
+    --light-primary: #c26e6e;
+    --grey: #eee;
+    --dark-grey: #323232;
+    --dark: #191919;
+    --danger: #D32F2F;
+	--light-danger: #FECDD3;
+    --warning: #FBC02D;
+    --light-warning: #FFF2C6;
+    --success: #388E3C;
+    --light-success: #BBF7D0;
+    --text: #f6f6f9;
+    --secondary: #190101;
+    --accent: #dd0808;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+.bx{
+    font-size: 1.7rem;
+}
+
+a{
+    text-decoration: none;
+}
+
+li{
+    list-style: none;
+}
+
+html{
+    overflow-x: hidden;
+}
+
+
+body{
+    background: var(--dark-grey);
+    overflow-x: hidden;
+}
+
+.navbar{
+    background-color: var(--dark);
+}
+
+.form-card{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: 2rem;
+    color: var(--light);
+}
+
+.form-card input{
+    background-color: var(--dark);
+    color: var(--light);
+}
+.form-card input:focus{
+    background-color: var(--dark);
+    color: var(--light);
+}
+
+.form-card button{
+    background-color: var(--primary);
+    border-color: var(--accent);
+}
+
+.form-card button:hover{
+    background-color: var(--light-primary);
+    border-color: var(--accent);
+}
+
+.form-card a{
+    color: var(--light-primary);
+}
+

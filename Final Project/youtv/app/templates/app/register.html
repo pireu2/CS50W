@@ -2,7 +2,8 @@
 
 {% block body %}
 
-    <h2>Register</h2>
+<div class="form-card">
+    <h2 class="mb-3">Register</h2>
 
     {% if message %}
         <div>{{ message }}</div>
@@ -12,20 +13,23 @@
         {% csrf_token %}
         {% csrf_token %}
         {% for field in form %}
-            <div class="form-group pb-3">
-                {{ field.label_tag }}
+            <div class="form-floating pb-3">
                 {{ field.errors }}
                 <input type="{{ field.field.widget.input_type }}"
                     class="form-control"
                     id="{{ field.id_for_label }}"
                     name="{{ field.name }}"
                     value="{{ field.value|default:'' }}"
-                    {% if field.required %}required{% endif %}>
+                    required>
+                <label for="{{ field.id_for_label }}">{{ field.label_tag }}</label>
             </div>
         {% endfor %}
-        <input class="btn btn-primary" type="submit" value="Register">
+        <div class="text-center">
+            <button class="btn btn-primary" type="submit">Register</button>
+        </div>
     </form>
-
     Already have an account? <a href="{% url 'login' %}">Log In here.</a>
+</div>
+
 
 {% endblock %}
