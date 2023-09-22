@@ -95,3 +95,11 @@ def upload(request):
     else:
         form = forms.VideoForm()
     return render(request, 'app/upload.html', {'form': form})
+
+def watch(request, id):
+    try:
+        video = Video.objects.get(id=id)
+    except Video.DoesNotExist:
+        return render(request, "app/error.html", {"message" : "This video does not exist"})
+    if video:
+        return render(request, "app/watch.html", {"video": video})

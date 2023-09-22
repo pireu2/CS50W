@@ -13,7 +13,7 @@ class User(AbstractUser):
 class Video(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255, blank=False)
-    description = models.TextField(null=True)
+    description = models.TextField(null=True, blank=True)
     creator = models.ForeignKey(
         "User", on_delete=models.CASCADE, related_name="uploads"
     )

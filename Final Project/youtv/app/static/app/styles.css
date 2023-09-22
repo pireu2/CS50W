@@ -67,6 +67,17 @@ body{
     color: var(--light);
 }
 
+.form-card textarea{
+    background-color: var(--dark);
+    color: var(--light);
+    
+}
+
+.form-card textarea:focus{
+    background-color: var(--dark);
+    color: var(--light);
+}
+
 .form-card button{
     background-color: var(--primary);
     border-color: var(--accent);
