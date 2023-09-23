@@ -5,13 +5,57 @@ YouTV
 {% endblock %}
 
 {% block script %}
+<script src="/static/app/expand-description.js"></script>
 {% endblock %}
 
 {% block body %}
-<h2>{{ video.title }}</h2>
-<p>{{ video.description }}</p>
-<video width="320" height="240" controls>
-    <source src="{{ video.video.url }}" type="video/mp4">
-    Your browser does not support the video tag.
-</video>
+<div class="watch">
+    <div class="video-item">
+        <video width="300" height="400" controls>
+            <source src="{{ video.video.url }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="video-info">
+        <h2>{{ video.title }}</h2>
+        <div class="video-nav">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="avatar-container">
+                    <img class="avatar" src="{{video.creator.avatar.url}}">
+                </div>
+                <div class="user-subs">
+                    <div class="username">{{video.creator.username}}</div>
+                    <div class="subs">{{video.creator.subscribers}} subscribers</div>
+                </div>
+                <input type="submit" class="btn btn-danger" value="Subscribe" name="subscribe">
+            </div>
+            <div class="like-bar">
+               <div class="like">
+                    <span class="material-symbols-outlined">
+                        thumb_up
+                    </span>
+                    {{video.likes}}
+               </div> 
+               <div class="line">|</div>
+               <div class="dislike">
+                    <span class="material-symbols-outlined">
+                        thumb_down
+                    </span>
+                    {{video.dislikes}}
+               </div> 
+            </div>
+        </div>
+        <div class="desc">
+            <div class="description-container">
+                <p class="description">{{ video.description|linebreaksbr }}</p>
+            </div>
+            <div class="text-center">
+                <div class="more-button">...more</div>
+            </div>
+        </div>
+        <div class="comments">
+            <h5>{{video.comments}} comments</h5>
+        </div>
+    </div>
+</div>
 {% endblock %}

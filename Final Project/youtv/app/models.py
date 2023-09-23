@@ -1,13 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import pre_delete
+from django.core.files.storage import FileSystemStorage
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
 
 
 class User(AbstractUser):
-    pass
+    avatar = models.FileField(upload_to="avatars/", default=settings.DEFAULT_AVATAR_PATH)
+    subscribers = models.IntegerField(default=0)
 
 
 class Video(models.Model):
@@ -18,6 +21,9 @@ class Video(models.Model):
         "User", on_delete=models.CASCADE, related_name="uploads"
     )
     video = models.FileField(upload_to="videos/")
+    likes = models.IntegerField(default=0)
+    dislikes = models.IntegerField(default=0)
+    comments = models.IntegerField(default=0)
 
     def __str__(self):
         return f'{self.creator} - {self.title}'
