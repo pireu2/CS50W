@@ -27,7 +27,9 @@ YouTV
                     <div class="username">{{video.creator.username}}</div>
                     <div class="subs">{{video.creator.subscribers}} subscribers</div>
                 </div>
+                {% if user.is_authenticated %}
                 <input type="submit" class="btn btn-danger" value="Subscribe" name="subscribe">
+                {% endif %}
             </div>
             <div class="like-bar">
                <div class="like">
@@ -54,8 +56,49 @@ YouTV
             </div>
         </div>
         <div class="comments">
+            {% if video.comments == 1 %}
+            <h5>{{video.comments}} comment</h5>
+            {% else %}
             <h5>{{video.comments}} comments</h5>
+            {% endif %}
+            {% if user.is_authenticated %}
+            <form class="comment-form pb-5" method="POST" action="/watch/{{video.id}}">
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div class="avatar-container">
+                        <img class="avatar" src="{{user.avatar.url}}">
+                    </div>
+                </div>
+                {% csrf_token %}
+                <textarea   id="{{ form.content.id_for_label }}"
+                            name="{{ form.content.name }}"
+                            style="height: 100%; width: 100%;"
+                            required></textarea>
+                <button class="btn btn-danger" type="submit">Post</button>
+            </form>
+            {% endif %}
+            {% for comment in comments %}
+            <div class="comment pb-3">
+                <div style="display: flex; align-items: center; gap: 1.5rem; padding-top: 5px;">
+                    <div class="avatar-container">
+                        <img class="avatar" src="{{comment.user.avatar.url}}">
+                    </div>
+                </div>
+                <div class="comment-data pe-2">
+                    <div style="display: flex; gap:1rem; vertical-align: middle; align-items: center;">
+                        <div class="comment-username">
+                            {{comment.user.username}}
+                        </div>
+                        <div class="comment-time">
+                            {{comment.timestamp}}
+                        </div>
+                    </div>
+                    {{comment.content}}
+                </div>
+            </div>
+            {% endfor %}
         </div>
+    </div>
+    <div class="recommended">
     </div>
 </div>
 {% endblock %}

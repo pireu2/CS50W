@@ -3,11 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import JsonResponse
 
-from .models import User, Video
+from datetime import datetime
+from .models import User, Video, Comment
 from . import forms
 # Create your views here.
 
@@ -101,5 +102,20 @@ def watch(request, id):
         video = Video.objects.get(id=id)
     except Video.DoesNotExist:
         return render(request, "app/error.html", {"message" : "This video does not exist"})
-    if video:
-        return render(request, "app/watch.html", {"video": video})
+    if request.method == "GET":
+        if video:
+            form = forms.CommentForm()
+            comments = Comment.objects.filter(video = video).all()
+            comments = comments.order_by('-timestamp')
+            return render(request, "app/watch.html", {"video": video, "comments": comments, "form": form})
+    else:
+        form = forms.CommentForm(request.POST)
+        if form.is_valid():
+            content = form.cleaned_data['content']
+            now = datetime.now()
+            user =  request.user
+            comment= Comment(user=user, video=video, timestamp= now, content=content)
+            comment.save()
+            video.comments += 1
+            video.save()
+            return HttpResponseRedirect(reverse("watch", args=[id]))

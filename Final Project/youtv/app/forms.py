@@ -1,5 +1,5 @@
 from django import forms
-from .models import Video
+from .models import Video, Comment
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=64, label="Username", required=True)
@@ -20,3 +20,8 @@ class VideoForm(forms.ModelForm):
         'creator': forms.HiddenInput(),
         'description': forms.Textarea(attrs={'rows': 4, 'cols': 15})
     }
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model= Comment
+        fields = ['content']
