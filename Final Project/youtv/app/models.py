@@ -10,7 +10,9 @@ import datetime
 
 
 class User(AbstractUser):
-    avatar = models.FileField(upload_to="avatars/", default=settings.DEFAULT_AVATAR_PATH)
+    avatar = models.FileField(
+        upload_to="avatars/", default=settings.DEFAULT_AVATAR_PATH
+    )
     subscribers = models.IntegerField(default=0)
 
 
@@ -25,10 +27,11 @@ class Video(models.Model):
     likes = models.IntegerField(default=0)
     dislikes = models.IntegerField(default=0)
     comments = models.IntegerField(default=0)
+    timestamp = models.DateTimeField(default=datetime.datetime.now())
 
     def __str__(self):
-        return f'{self.creator} - {self.title}'
-    
+        return f"{self.creator} - {self.title}"
+
     def delete(self, *args, **kwargs):
         self.video.delete()
         super().delete(*args, **kwargs)
@@ -36,10 +39,40 @@ class Video(models.Model):
 
 class Comment(models.Model):
     id = models.AutoField(primary_key=True)
-    video = models.ForeignKey("Video", on_delete=models.CASCADE, related_name="video_comments")
-    user = models.ForeignKey("User", on_delete=models.CASCADE, related_name="user_comments")
+    video = models.ForeignKey(
+        "Video", on_delete=models.CASCADE, related_name="video_comments"
+    )
+    user = models.ForeignKey(
+        "User", on_delete=models.CASCADE, related_name="user_comments"
+    )
     content = models.TextField(blank=False, max_length=3000)
     timestamp = models.DateTimeField(default=datetime.datetime.now())
 
     def __str__(self):
-        return f'{self.user.username} | {self.video.title} - {self.content}'
+        return f"{self.user.username} | {self.video.title} - {self.content}"
+
+
+class Like(models.Model):
+    id = models.AutoField(primary_key=True)
+    video = models.ForeignKey(
+        "Video", on_delete=models.CASCADE, related_name="video_likes"
+    )
+    user = models.ForeignKey(
+        "User", on_delete=models.CASCADE, related_name="user_likes"
+    )
+
+    def __str__(self):
+        return f"{self.video.title} - {self.user.username}"
+
+
+class Dislike(models.Model):
+    id = models.AutoField(primary_key=True)
+    video = models.ForeignKey(
+        "Video", on_delete=models.CASCADE, related_name="video_dislikes"
+    )
+    user = models.ForeignKey(
+        "User", on_delete=models.CASCADE, related_name="user_dislikes"
+    )
+
+    def __str__(self):
+        return f"{self.video.title} - {self.user.username}"
