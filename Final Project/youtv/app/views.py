@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.http import JsonResponse
 
 from datetime import datetime
-from .models import User, Video, Comment, Like, Dislike
+from .models import User, Video, Comment, Like, Dislike, Subscription
 from . import forms
 
 # Create your views here.
@@ -124,11 +124,33 @@ def watch(request, id):
             comments = Comment.objects.filter(video=video).all()
             comments = comments.order_by("-timestamp")
             vids = Video.objects.exclude(id=id)[:20]
-            print(vids)
+            liked = (
+                Like.objects.filter(video=video, user=request.user).exists()
+                if request.user.is_authenticated
+                else False
+            )
+            disliked = (
+                Dislike.objects.filter(video=video, user=request.user).exists()
+                if request.user.is_authenticated
+                else False
+            )
+            subbed = (
+                Subscription.objects.filter(creator=video.creator, subscriber=request.user).exists()
+                if request.user.is_authenticated
+                else False
+            )
             return render(
                 request,
                 "app/watch.html",
-                {"video": video, "comments": comments, "form": form, "vids": vids},
+                {
+                    "video": video,
+                    "comments": comments,
+                    "form": form,
+                    "vids": vids,
+                    "liked": liked,
+                    "disliked": disliked,
+                    "subbed": subbed
+                },
             )
     else:
         form = forms.CommentForm(request.POST)
@@ -159,9 +181,66 @@ def like(request, video_id):
             {"message": "Like Success", "status": 200, "likes": video.likes}, status=200
         )
     else:
-        video.likes -= 1
-        video.save
+        video.likes = video.likes - 1
+        video.save()
         like.delete()
         return JsonResponse(
             {"message": "Like Removed", "status": 200, "likes": video.likes}, status=200
+        )
+
+
+@login_required
+def dislike(request, video_id):
+    if request.method != "POST":
+        return render(request, "app/error.html", {"message": "POST method required."})
+    video = Video.objects.get(id=video_id)
+    try:
+        dislike = Dislike.objects.get(video=video, user=request.user)
+    except Dislike.DoesNotExist:
+        video.dislikes += 1
+        video.save()
+        dislike = Dislike(video=video, user=request.user)
+        dislike.save()
+        return JsonResponse(
+            {"message": "disLike Success", "status": 200, "dislikes": video.dislikes},
+            status=200,
+        )
+    else:
+        video.dislikes = video.dislikes - 1
+        video.save()
+        dislike.delete()
+        return JsonResponse(
+            {"message": "disLike Removed", "status": 200, "dislikes": video.dislikes},
+            status=200,
+        )
+
+
+@login_required
+def subscribe(request, username):
+    if request.method != "POST":
+        return render(request, "app/error.html", {"message": "POST method required."})
+    try:
+        creator = User.objects.get(username = username)
+    except User.DoesNotExist:
+        return render(
+            request, "app/error.html", {"message": "This user does not exist."}
+        )
+    try:
+        is_subbed = Subscription.objects.get(creator=creator, subscriber=request.user)
+    except Subscription.DoesNotExist:
+        sub = Subscription(creator=creator, subscriber=request.user)
+        creator.subscribers += 1
+        sub.save()
+        creator.save()
+        return JsonResponse(
+            {"message": "Sub Success", "status": 200, "subs": creator.subscribers},
+            status=200,
+        )
+    else:
+        is_subbed.delete()
+        creator.subscribers -= 1
+        creator.save()
+        return JsonResponse(
+            {"message": "Unsub Success", "status": 200, "subs": creator.subscribers},
+            status=200,
         )

@@ -8,9 +8,12 @@ YouTV
 <script src="/static/app/expand-description.js"></script>
 <script src="/static/app/recommended-vid-redirect.js"></script>
 <script src="/static/app/like.js"></script>
+<script src="/static/app/subscribe.js"></script>
 {% endblock %}
 
 {% block body %}
+<div id="data" data-current-user-username="{{user.username}}" data-creator-username="{{video.creator.username}}"
+    data-isauthenticaed="{{user.is_authenticated}}" data-video-id="{{video.id}}"></div>
 <div class="watch">
     <div class="video-item">
         <video controls>
@@ -29,25 +32,41 @@ YouTV
                     <div class="username">{{video.creator.username}}</div>
                     <div class="subs">{{video.creator.subscribers}} subscribers</div>
                 </div>
-                {% if user.is_authenticated %}
-                <input type="submit" class="btn btn-danger" value="Subscribe" name="subscribe">
+                {% if user.is_authenticated and user.username != video.creator.username %}
+                    {% if subbed %}
+                        <input id="subscribe" type="submit" class="btn btn-danger grey" value="Subscribed" name="subscribe">
+                    {% else %}
+                        <input id="subscribe" type="submit" class="btn btn-danger" value="Subscribe" name="subscribe">
+                    {% endif %}
                 {% endif %}
             </div>
-            <div class="like-bar" data-isauthenticaed="{{user.is_authenticated}}" data-id="{{video.id}}">
+            <div class="like-bar">
                <div class="like">
+                {% if liked %}
+                    <span class="material-symbols-outlined like-icon red">
+                        thumb_up
+                    </span>
+                {% else %}
                     <span class="material-symbols-outlined like-icon">
                         thumb_up
                     </span>
+                {% endif %}
                     <div class="like-count">
                         {{video.likes}}
                     </div>
                </div> 
                <div class="line">|</div>
                <div class="dislike">
-                    <span class="material-symbols-outlined dislike-icon">
-                        thumb_down
-                    </span>
-                    <div class="dislike-coount">
+                    {% if disliked %}
+                        <span class="material-symbols-outlined dislike-icon red">
+                            thumb_down
+                        </span>
+                    {% else %}
+                        <span class="material-symbols-outlined dislike-icon">
+                            thumb_down
+                        </span>
+                    {% endif %}
+                    <div class="dislike-count">
                         {{video.dislikes}}
                     </div>
                </div> 

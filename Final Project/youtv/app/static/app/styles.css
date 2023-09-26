@@ -388,3 +388,12 @@ body{
     font-size: 1.2rem;
     color: var(--light);
 }
+
+.red{
+    color:var(--accent);
+}
+
+.grey{
+    background-color: var(--grey) !important;
+    border-color: var(--dark) !important;
+}

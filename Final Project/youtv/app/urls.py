@@ -13,6 +13,8 @@ urlpatterns = [
     path("upload", views.upload, name="upload"),
     path("watch/<int:id>", views.watch, name="watch"),
     path("like/<int:video_id>", views.like, name="like"),
+    path("dislike/<int:video_id>", views.dislike, name="dislike"),
+    path("subscribe/<str:username>", views.subscribe, name="subscribe")
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

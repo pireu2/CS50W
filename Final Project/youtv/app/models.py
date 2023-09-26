@@ -4,6 +4,7 @@ from django.db.models.signals import pre_delete
 from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 import datetime
 
 # Create your models here.
@@ -27,7 +28,7 @@ class Video(models.Model):
     likes = models.IntegerField(default=0)
     dislikes = models.IntegerField(default=0)
     comments = models.IntegerField(default=0)
-    timestamp = models.DateTimeField(default=datetime.datetime.now())
+    timestamp = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.creator} - {self.title}"
@@ -46,7 +47,7 @@ class Comment(models.Model):
         "User", on_delete=models.CASCADE, related_name="user_comments"
     )
     content = models.TextField(blank=False, max_length=3000)
-    timestamp = models.DateTimeField(default=datetime.datetime.now())
+    timestamp = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.user.username} | {self.video.title} - {self.content}"
@@ -76,3 +77,16 @@ class Dislike(models.Model):
 
     def __str__(self):
         return f"{self.video.title} - {self.user.username}"
+
+
+class Subscription(models.Model):
+    id = models.AutoField(primary_key=True)
+    subscriber = models.ForeignKey(
+        "User", on_delete=models.CASCADE, related_name="user_subscriber"
+    )
+    creator = models.ForeignKey(
+        "User", on_delete=models.CASCADE, related_name="user_creator"
+    )
+
+    def __str__(self):
+        return f"{self.subscriber} is subscribed to {self.creator}"

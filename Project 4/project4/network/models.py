@@ -2,20 +2,26 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-
 class User(AbstractUser):
-    following = models.ManyToManyField('self', through='Follow', symmetrical=False, related_name='user_following')
-    
+    following = models.ManyToManyField(
+        "self", through="Follow", symmetrical=False, related_name="user_following"
+    )
+
+
 class Follow(models.Model):
-    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followed_by')
-    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follows')
+    follower = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="followed_by"
+    )
+    following = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="follows"
+    )
 
     def __str__(self):
-        return f'{self.follower} is following {self.following}'
+        return f"{self.follower} is following {self.following}"
 
 
 class Post(models.Model):
-    id= models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     author = models.ForeignKey("User", on_delete=models.CASCADE, related_name="posts")
     content = models.TextField(blank=False)
     timestamp = models.DateTimeField(blank=False)
@@ -31,8 +37,9 @@ class Post(models.Model):
         }
 
     def __str__(self):
-        return f'{self.author} - {self.content}'
-    
+        return f"{self.author} - {self.content}"
+
+
 class Comment(models.Model):
     id = models.AutoField(primary_key=True)
     post = models.ForeignKey("Post", on_delete=models.CASCADE, related_name="comments")
@@ -40,8 +47,9 @@ class Comment(models.Model):
     content = models.TextField(blank=False)
 
     def __str__(self):
-        return f'{self.author} - {self.content}'
-    
+        return f"{self.author} - {self.content}"
+
+
 class Like(models.Model):
     id = models.AutoField(primary_key=True)
     post = models.ForeignKey("Post", on_delete=models.CASCADE, related_name="liked")
