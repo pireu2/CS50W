@@ -9,6 +9,7 @@ YouTV
 <script src="/static/app/recommended-vid-redirect.js"></script>
 <script src="/static/app/like.js"></script>
 <script src="/static/app/subscribe.js"></script>
+<script src="/static/app/comment.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -83,25 +84,27 @@ YouTV
         </div>
         <div class="comments">
             {% if video.comments == 1 %}
-            <h5>{{video.comments}} comment</h5>
+            <h5 id="comms">{{video.comments}} comment</h5>
             {% else %}
-            <h5>{{video.comments}} comments</h5>
+            <h5 id="comms">{{video.comments}} comments</h5>
             {% endif %}
             {% if user.is_authenticated %}
-            <form class="comment-form pb-5" method="POST" action="/watch/{{video.id}}">
-                <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div class="avatar-container">
-                        <img class="avatar" src="{{user.avatar.url}}">
+                <form class="comment-form pb-5" method="POST" action="/watch/{{video.id}}">
+                    <div style="display: flex; align-items: center; gap: 1.5rem;">
+                        <div class="avatar-container">
+                            <img class="avatar" src="{{user.avatar.url}}">
+                        </div>
                     </div>
-                </div>
-                {% csrf_token %}
-                <textarea   id="{{ form.content.id_for_label }}"
-                            name="{{ form.content.name }}"
-                            style="height: 100%; width: 100%;"
-                            required></textarea>
-                <button class="btn btn-danger" type="submit">Post</button>
-            </form>
+                    {% csrf_token %}
+                    <textarea   id="{{ form.content.id_for_label }}"
+                                name="{{ form.content.name }}"
+                                style="height: 100%; width: 100%;"
+                                required></textarea>
+                    <button class="btn btn-danger" type="submit">Post</button>
+                </form>
             {% endif %}
+            <div id="error"></div>
+            <div id="new-comment" class="comment"></div>
             {% for comment in comments %}
             <div class="comment pb-3">
                 <div style="display: flex; align-items: center; gap: 1.5rem; padding-top: 5px;">

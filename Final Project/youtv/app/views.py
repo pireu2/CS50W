@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import JsonResponse
 
+import json
 from datetime import datetime
 from .models import User, Video, Comment, Like, Dislike, Subscription
 from . import forms
@@ -135,7 +136,9 @@ def watch(request, id):
                 else False
             )
             subbed = (
-                Subscription.objects.filter(creator=video.creator, subscriber=request.user).exists()
+                Subscription.objects.filter(
+                    creator=video.creator, subscriber=request.user
+                ).exists()
                 if request.user.is_authenticated
                 else False
             )
@@ -149,20 +152,9 @@ def watch(request, id):
                     "vids": vids,
                     "liked": liked,
                     "disliked": disliked,
-                    "subbed": subbed
+                    "subbed": subbed,
                 },
             )
-    else:
-        form = forms.CommentForm(request.POST)
-        if form.is_valid():
-            content = form.cleaned_data["content"]
-            now = datetime.now()
-            user = request.user
-            comment = Comment(user=user, video=video, timestamp=now, content=content)
-            comment.save()
-            video.comments += 1
-            video.save()
-            return HttpResponseRedirect(reverse("watch", args=[id]))
 
 
 @login_required
@@ -220,7 +212,7 @@ def subscribe(request, username):
     if request.method != "POST":
         return render(request, "app/error.html", {"message": "POST method required."})
     try:
-        creator = User.objects.get(username = username)
+        creator = User.objects.get(username=username)
     except User.DoesNotExist:
         return render(
             request, "app/error.html", {"message": "This user does not exist."}
@@ -244,3 +236,36 @@ def subscribe(request, username):
             {"message": "Unsub Success", "status": 200, "subs": creator.subscribers},
             status=200,
         )
+
+
+@login_required
+def comment(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    data = json.loads(request.body)
+    content = data.get("content")
+    video_id = data.get("video_id")
+    try:
+        video = Video.objects.get(id=video_id)
+    except Video.DoesNotExist:
+        return JsonResponse({"error": "Video does not exitst"}, status=400)
+    if content == "":
+        return JsonResponse({"error": "Post requires content"}, status=400)
+    timestamp = datetime.now()
+    comment = Comment(
+        video=video, content=content, user=request.user, timestamp=timestamp
+    )
+    comment.save()
+    video.comments += 1
+    video.save()
+    formatted_datetime = timestamp.strftime("%b. %d, %Y, %I:%M %#p")
+    return JsonResponse(
+        {
+            "message": "Post Success",
+            "status": 200,
+            "avatarurl": request.user.avatar.url,
+            "timestamp": formatted_datetime,
+            "comments": video.comments
+        },
+        status=200,
+    )
