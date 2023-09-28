@@ -16,6 +16,8 @@ urlpatterns = [
     path("dislike/<int:video_id>", views.dislike, name="dislike"),
     path("subscribe/<str:username>", views.subscribe, name="subscribe"),
     path("comment", views.comment, name="comment"),
+    path("latest", views.latest, name="latest"),
+    path("subscribed", views.subscribed, name="subscribed"),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

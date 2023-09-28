@@ -1,7 +1,7 @@
 {% extends "app/layout.html" %}
 
 {% block title %}
-YouTV
+YouTV Latest
 {% endblock %}
 
 {% block script %}
@@ -30,26 +30,4 @@ YouTV
             {% endfor %}
         </div>
     </div>
-    {% if user.is_authenticated %}
-    <div class="subscribed">
-        <h3>Subscribed</h3>
-        <div class="latest-videos">
-            {% for vid in subbed_vids %}
-                <div data-video="{{vid.id}}" class="latest-vid">
-                    <div class="latest-vid-item">
-                        <video>
-                            <source src="{{ vid.video.url }}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                    <div class="vid-info">
-                        <p class="vid-title">{{vid.title}}</p>
-                        <p>{{vid.creator}}</p>
-                        <p>{{vid.timestamp | date:"Y-m-d"}}</p>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
 {% endblock %}

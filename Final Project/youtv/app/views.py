@@ -16,7 +16,43 @@ from . import forms
 
 
 def index(request):
-    return render(request, "app/index.html")
+    if request.method != "GET":
+        return render(request, "app/error.html", {"message": "GET method required."})
+    latest_vids = Video.objects.all()
+    latest_vids = latest_vids.order_by("-timestamp")
+    latest_vids = latest_vids[:12]
+    if request.user.is_authenticated:
+        sub_values = [
+            sub.creator for sub in Subscription.objects.filter(subscriber=request.user)
+        ]
+        subbed_vids = Video.objects.filter(creator__in=sub_values)
+        subbed_vids = subbed_vids[:12]
+    else:
+        subbed_vids = []
+    return render(
+        request,
+        "app/index.html",
+        {"latest_vids": latest_vids, "subbed_vids": subbed_vids},
+    )
+
+
+def latest(request):
+    if request.method != "GET":
+        return render(request, "app/error.html", {"message": "GET method required."})
+    latest_vids = Video.objects.all()
+    latest_vids = latest_vids.order_by("-timestamp")
+    return render(request, "app/latest.html", {"latest_vids": latest_vids})
+
+
+@login_required
+def subscribed(request):
+    if request.method != "GET":
+        return render(request, "app/error.html", {"message": "GET method required."})
+    sub_values = [
+        sub.creator for sub in Subscription.objects.filter(subscriber=request.user)
+    ]
+    subbed_vids = Video.objects.filter(creator__in=sub_values)
+    return render(request, "app/subscribed.html", {"subbed_vids": subbed_vids})
 
 
 def login_view(request):
@@ -265,7 +301,7 @@ def comment(request):
             "status": 200,
             "avatarurl": request.user.avatar.url,
             "timestamp": formatted_datetime,
-            "comments": video.comments
+            "comments": video.comments,
         },
         status=200,
     )
