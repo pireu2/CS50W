@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () =>{
     const data = document.querySelector('#data');
-    const isAuthenticated = data.getAttribute('data-isauthenticaed');
+    const isAuthenticated = data.getAttribute('data-isauthenticated');
     const creator = data.getAttribute('data-creator-username');
     const currentUser = data.getAttribute('data-current-user-username');
     if(!isAuthenticated || (creator === currentUser)){

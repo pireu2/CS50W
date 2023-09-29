@@ -18,6 +18,9 @@ urlpatterns = [
     path("comment", views.comment, name="comment"),
     path("latest", views.latest, name="latest"),
     path("subscribed", views.subscribed, name="subscribed"),
+    path("profile/<str:username>", views.profile, name="profile"),
+    path("change", views.change, name="change"),
+    path("search/<str:input>", views.search, name="search")
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

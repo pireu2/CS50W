@@ -1,5 +1,5 @@
 from django import forms
-from .models import Video, Comment
+from .models import Video, Comment, User
 
 
 class LoginForm(forms.Form):
@@ -29,3 +29,9 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ["content"]
+
+
+class PicureForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields= ["avatar"]

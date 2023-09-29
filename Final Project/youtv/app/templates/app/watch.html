@@ -14,7 +14,7 @@
 
 {% block body %}
 <div id="data" data-current-user-username="{{user.username}}" data-creator-username="{{video.creator.username}}"
-    data-isauthenticaed="{{user.is_authenticated}}" data-video-id="{{video.id}}"></div>
+    data-isauthenticated="{{user.is_authenticated}}" data-video-id="{{video.id}}"></div>
 <div class="watch">
     <div class="video-item">
         <video controls>
@@ -26,10 +26,10 @@
         <h2>{{ video.title }}</h2>
         <div class="video-nav">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div class="avatar-container">
+                <div class="avatar-container" id="redirect" data-username="{{video.creator.username}}">
                     <img class="avatar" src="{{video.creator.avatar.url}}">
                 </div>
-                <div class="user-subs">
+                <div class="user-subs" id="redirect" data-username="{{video.creator.username}}">
                     <div class="username">{{video.creator.username}}</div>
                     <div class="subs">{{video.creator.subscribers}} subscribers</div>
                 </div>
@@ -91,7 +91,7 @@
             {% if user.is_authenticated %}
                 <form class="comment-form pb-5" method="POST" action="/watch/{{video.id}}">
                     <div style="display: flex; align-items: center; gap: 1.5rem;">
-                        <div class="avatar-container">
+                        <div class="avatar-container" id="redirect" data-username="{{video.creator.username}}">
                             <img class="avatar" src="{{user.avatar.url}}">
                         </div>
                     </div>
@@ -108,13 +108,13 @@
             {% for comment in comments %}
             <div class="comment pb-3">
                 <div style="display: flex; align-items: center; gap: 1.5rem; padding-top: 5px;">
-                    <div class="avatar-container">
+                    <div class="avatar-container" id="redirect" data-username="{{comment.user.username}}">
                         <img class="avatar" src="{{comment.user.avatar.url}}">
                     </div>
                 </div>
                 <div class="comment-data pe-2">
                     <div style="display: flex; gap:1rem; vertical-align: middle; align-items: center;">
-                        <div class="comment-username">
+                        <div class="comment-username" id="redirect" data-username="{{comment.user.username}}">
                             {{comment.user.username}}
                         </div>
                         <div class="comment-time">

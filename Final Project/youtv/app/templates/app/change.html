@@ -1,0 +1,30 @@
+{% extends "app/layout.html" %}
+
+{% block title %}
+Change Profile Picture
+{% endblock %}
+
+{% block body %}
+<div class="form-card">
+    <h2 class="mb-3">Change Profile Picture</h2>
+
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+
+    <form action="{% url 'change' %}" method="post" enctype="multipart/form-data" class="pb-3">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.video.errors }}
+            <div class="text-center">
+                <label for="{{form.avatar.id_for_label}}" class="form-label">Picture</label>
+            </div>
+            <input class="form-control" type="file" id="{{form.avatar.id_for_label}}" name="{{form.avatar.name}}" required>
+        </div>
+  
+        <div class="text-center">
+            <button class="btn btn-danger" type="submit">Change</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

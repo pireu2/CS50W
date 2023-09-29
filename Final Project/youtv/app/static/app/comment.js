@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () =>{
     const data = document.querySelector('#data')
     const videoId = data.getAttribute('data-video-id');
     const currentUser = data.getAttribute('data-current-user-username');
-    const isAuthenticated = data.getAttribute('data-isauthenticaed');
+    const isAuthenticated = data.getAttribute('data-isauthenticated');
     if (!isAuthenticated){
         return;
     }

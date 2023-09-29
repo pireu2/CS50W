@@ -1,7 +1,7 @@
 {% extends "app/layout.html" %}
 
 {% block title %}
-YouTV Latest
+Search: {{input}}
 {% endblock %}
 
 {% block script %}
@@ -11,9 +11,9 @@ YouTV Latest
 {% block body %}
 <div id="#data" data-is-authenticated="{{user.is_authenticated}}"></div>
     <div class="latest">
-        <h3>Latest Videos</h3>
+        <h3>Results for '{{input}}'</h3>
         <div class="latest-videos">
-            {% for vid in latest_vids %}
+            {% for vid in videos %}
                 <div data-video="{{vid.id}}" class="latest-vid">
                     <div class="latest-vid-item">
                         <video>
@@ -30,7 +30,6 @@ YouTV Latest
             {% empty %}
             <h5>No videos</h5>
             {% endfor %}
-
         </div>
     </div>
 {% endblock %}

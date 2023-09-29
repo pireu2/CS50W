@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () =>{
     recommendedVids.forEach(element => {
         element.addEventListener('click', () => {
             const videoId = element.getAttribute('data-video');
-
             window.location.href = `/watch/${videoId}`;
         });
     });

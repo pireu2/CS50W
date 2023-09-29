@@ -27,6 +27,8 @@ YouTV
                         <p>{{vid.timestamp | date:"Y-m-d"}}</p>
                     </div>
                 </div>
+                {% empty %}
+            <h5>No videos</h5>
             {% endfor %}
         </div>
     </div>
@@ -48,6 +50,8 @@ YouTV
                         <p>{{vid.timestamp | date:"Y-m-d"}}</p>
                     </div>
                 </div>
+                {% empty %}
+            <h5>No videos</h5>
             {% endfor %}
         </div>
     </div>

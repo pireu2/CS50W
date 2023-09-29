@@ -1,0 +1,55 @@
+{% extends "app/layout.html" %}
+
+{% block title %}
+{{current_user.username}}
+{% endblock %}
+
+{% block script %}
+<script src="/static/app/vid-redirect.js"></script>
+<script src="/static/app/subscribe.js"></script>
+{% endblock %}
+
+{% block body %}
+<div id="data" data-is-authenticated="{{user.is_authenticated}}" 
+                data-current-user-username="{{user.username}}" 
+                data-creator-username="{{current_user.username}}"
+                data-isauthenticated="{{user.is_authenticated}}"></div>
+    <div class="profile-avatar">
+        <div class="profile-avatar-container">
+            <img class="avatar" src="{{current_user.avatar.url}}">
+        </div>
+        <p>{{current_user.username}}</p>
+        <div class="subs">{{current_user.subscribers}} subscribers</div>
+        {% if user.username != current_user.username %}
+            {% if subbed %}
+                <input id="subscribe" type="submit" class="btn btn-danger grey" value="Subscribed" name="subscribe">
+            {% else %}
+                <input id="subscribe" type="submit" class="btn btn-danger" value="Subscribe" name="subscribe">
+            {% endif %}
+        {% else %}
+        <a href="/change">
+            <input id="#change" type="submit" class="btn btn-danger grey" value="Change profile picture" name="change">
+        </a>
+        {% endif %}
+    </div>
+    <div class="latest">
+        <h3>Latest Videos by {{current_user.username}}</h3>
+        <div class="latest-videos">
+            {% for vid in videos %}
+                <div data-video="{{vid.id}}" class="latest-vid">
+                    <div class="latest-vid-item">
+                        <video>
+                            <source src="{{ vid.video.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="vid-info">
+                        <p class="vid-title">{{vid.title}}</p>
+                        <p>{{vid.creator}}</p>
+                        <p>{{vid.timestamp | date:"Y-m-d"}}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
